@@ -1,25 +1,41 @@
+using Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ProjectApp.Services;
+using NLog;
+using ProjectApp.Extensions;
+using References;
+using System.IO;
 
 namespace ProjectApp
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        public IConfiguration Configuration { get; }
+
+        public Startup (IConfiguration configuration)
+        {
+            Configuration = configuration;
+            LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"));
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ICarService, CarService>();
-            services.AddSingleton<ILoggerService, LoggerService>();
+            services.ConfigureCors();
+            services.ConfigureIISIntegration();
+            services.ConfigureLoggerService();
+            services.ConfigureSqlContext(Configuration);
+            services.ConfigureRepositoryManager();
+            services.AddAutoMapper(typeof(Startup));
             services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerManager logger)
         {
             if (env.IsDevelopment())
             {
@@ -28,6 +44,14 @@ namespace ProjectApp
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
+            app.ConfigureExceptionHandler(logger);
+
+            app.UseCors("CorsPolicy");
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.All
+            });
 
             app.UseRouting();
 

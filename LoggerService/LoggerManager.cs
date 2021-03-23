@@ -1,14 +1,14 @@
-using NLog;
+﻿using NLog;
+using References;
 
-namespace ProjectApp.Services
+namespace LoggerService
 {
-    public class LoggerService : ILoggerService
+    public class LoggerManager: ILoggerManager
     {
-        private static ILogger logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+        private static ILogger logger = LogManager.GetCurrentClassLogger();
 
-        public LoggerService()
+        public LoggerManager()
         {
-
         }
 
         public void LogDebug(string message)
@@ -21,12 +21,12 @@ namespace ProjectApp.Services
             logger.Error(message);
         }
 
-        public void LogInformation(string message)
+        public void LogInfo(string message)
         {
             logger.Info(message);
         }
 
-        public void LogWarning(string message)
+        public void LogWarn(string message)
         {
             logger.Warn(message);
         }

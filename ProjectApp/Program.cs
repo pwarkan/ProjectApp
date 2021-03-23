@@ -21,7 +21,7 @@ namespace ProjectApp
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseWebRoot("ClientApp");
+                    //webBuilder.UseWebRoot("ClientApp");
                 });
     }
 }
